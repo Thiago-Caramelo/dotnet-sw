@@ -1,5 +1,5 @@
 const CACHE = 'cache-and-update';
-
+const CACHE_AVAILABLE = 'cache-available';
 const cacheWhitList = [''];
 
 self.addEventListener('install', function (evt) {
@@ -8,13 +8,11 @@ self.addEventListener('install', function (evt) {
 });
 
 self.addEventListener('fetch', function (evt) {
-    return evt.respondWith(fetch(evt.request));
-    // console.log('The service worker is serving the asset.');
-    // if (evt.request.url === "http://localhost:5000/") {
-    //     evt.waitUntil(precachePaginas());
-    // }
-    // evt.respondWith(fromCache(evt.request));
-    // evt.waitUntil(update(evt.request));
+    if (evt.request.url.toLocaleLowerCase().indexOf("/carregando") !== -1) {
+        console.log('Updating page caches');
+        evt.waitUntil(precachePaginas());
+    }
+    return evt.respondWith(fromCache(evt.request));
 });
 
 function precache() {
@@ -32,16 +30,19 @@ function precache() {
 
 function precachePaginas() {
     return caches.open(CACHE).then(function (cache) {
-        return cache.addAll([
-            new Request('/Home/Privacy', { credentials: "include" })
-        ]);
+        return caches.delete(CACHE_AVAILABLE).then(() => {
+            return cache.addAll([
+                new Request('/Home/Privacy', { credentials: "include" }),
+                new Request('/Home/Index', { credentials: "include" })
+            ]).then(() => caches.open(CACHE_AVAILABLE));
+        });
     });
 }
 
 function fromCache(request) {
     return caches.open(CACHE).then(function (cache) {
         return cache.match(request).then(function (matching) {
-            return matching;
+            return matching || fetch(request);
         });
     });
 }
