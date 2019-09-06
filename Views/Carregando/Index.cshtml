@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Carregando</h1>
+    <script>
+        let loaded = false;
+        let timer;
+        const checkCacheWasLoaded = (loaded) => {
+            if (loaded) {
+                console.log('Cache was loaded.');
+                if (timer) clearTimeout(timer);
+            } else {
+                console.log('Cache is being loaded.');
+                timer = setTimeout(hasCache, 1000)
+            }
+        };
+        const hasCache = () => {
+            caches.has('cache-available').then(checkCacheWasLoaded);
+        }        
+        document.addEventListener("DOMContentLoaded", function(event) {
+            hasCache();
+        });
+    </script>    
+</div>
